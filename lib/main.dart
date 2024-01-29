@@ -12,7 +12,7 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -36,8 +36,16 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class MyHomePage extends StatelessWidget {
-  const MyHomePage({super.key});
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({Key? key}) : super(key: key);
+
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  final cityTextController = TextEditingController();
+  final dataService = DataService();
 
   @override
   Widget build(BuildContext context) {
@@ -58,84 +66,112 @@ class MyHomePage extends StatelessWidget {
           ),
         ),
       ),
-      body: _buildBody(context),
-    );
-  }
 
-  Widget _buildBody(BuildContext context) {
-    final cityTextController = TextEditingController();
-    final dataService = DataService();
-
-    return Stack(
-      children: [
-        // Language Buttons
-        Align(
-          alignment: const Alignment(-0.9, 0.9),
-          child: FloatingActionButton(
-            backgroundColor: Colors.blueAccent,
-            foregroundColor: Colors.white,
-            onPressed: () {
-              // Toggle between EN and RU
-              final isEnglish = Provider.of<LocaleProvider>(context, listen: false).locale == AllLocales.all[0];
-              Locale newLocale = isEnglish ? AllLocales.all[1] : AllLocales.all[0];
-              Provider.of<LocaleProvider>(context, listen: false).setLocale(newLocale);
-            },
-            child: Consumer<LocaleProvider>(
-              builder: (context, localeProvider, child) {
-                return Text(
-                  localeProvider.locale == AllLocales.all[0] ? "EN" : "RU",
-                );
+      body: Stack(
+        children: [
+          // Language Buttons
+          Align(
+            alignment: const Alignment(-0.9, 0.9),
+            child: FloatingActionButton(
+              backgroundColor: Colors.blueAccent,
+              foregroundColor: Colors.white,
+              onPressed: () {
+                // Toggle between EN and RU
+                final isEnglish = Provider.of<LocaleProvider>(context, listen: false).locale == AllLocales.all[0];
+                Locale newLocale = isEnglish ? AllLocales.all[1] : AllLocales.all[0];
+                Provider.of<LocaleProvider>(context, listen: false).setLocale(newLocale);
               },
+              child: Consumer<LocaleProvider>(
+                builder: (context, localeProvider, child) {
+                  return Text(
+                    localeProvider.locale == AllLocales.all[0] ? "EN" : "RU",
+                  );
+                },
+              ),
             ),
           ),
-        ),
 
-        // Weather Information and Search
-        Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildWeatherInfo(context, cityTextController, dataService),
-            ],
+          // Weather Information and Search
+          Positioned(
+            bottom: 16.0,
+            right: 16.0,
+            child: ElevatedButton(
+              onPressed: () {
+                // Trigger the FutureBuilder to reload with new data
+                setState(() {});
+              },
+              style: ElevatedButton.styleFrom(
+                primary: Colors.black,
+                fixedSize: const Size(50, 50),
+              ),
+              child: Icon(
+                Icons.search,
+                color: Colors.white,
+              ),
+            ),
           ),
-        ),
-      ],
-    );
-  }
 
-  Widget _buildWeatherInfo(BuildContext context, TextEditingController cityTextController, DataService dataService) {
-    return FutureBuilder<WeatherResponse>(
-      future: dataService.getWeather(cityTextController.text, context),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return CircularProgressIndicator(); // Show a loading indicator while waiting for data
-        } else if (snapshot.hasError) {
-          return Text('Error: ${snapshot.error}');
-        } else if (snapshot.hasData) {
-          final response = snapshot.data!;
-          return Column(
-            children: [
-              Text(
-                cityTextController.text,
-                style: const TextStyle(fontSize: 30, color: Colors.black),
-              ),
-              Text(
-                '${response.tempInfo.temperature}°',
-                style: response.tempInfo.temperature < 15
-                    ? const TextStyle(fontSize: 30, color: Colors.blue)
-                    : const TextStyle(fontSize: 30, color: Colors.orange),
-              ),
-              Text(
-                response.weatherInfo.description,
-                style: TextStyle(color: Theme.of(context).colorScheme.primary),
-              ),
-              Image.network(response.iconUrl),
-            ],
-          );
-        } else {
-          return Container(); // Return an empty container if there's no data
-        }
-      },
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Use FutureBuilder for handling the asynchronous API call
+                FutureBuilder<WeatherResponse>(
+                  future: dataService.getWeather(cityTextController.text, context),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return CircularProgressIndicator(); // Show loading indicator while waiting
+                    } else if (snapshot.hasError) {
+                      return Text('Error: ${snapshot.error}');
+                    } else if (snapshot.hasData) {
+                      final response = snapshot.data!;
+                      return Column(
+                        children: [
+                          Text(
+                            cityTextController.text,
+                            style: const TextStyle(fontSize: 30, color: Colors.black),
+                          ),
+                          Text(
+                            '${response.tempInfo.temperature}°',
+                            style: response.tempInfo.temperature < 15
+                                ? const TextStyle(fontSize: 30, color: Colors.blue)
+                                : const TextStyle(fontSize: 30, color: Colors.orange),
+                          ),
+                          Text(
+                            response.weatherInfo.description,
+                            style: TextStyle(color: Theme.of(context).colorScheme.primary),
+                          ),
+                          Image.network(response.iconUrl),
+                        ],
+                      );
+                    } else {
+                      return Container(); // Return an empty container if there's no data
+                    }
+                  },
+                ),
+
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 50),
+                  child: SizedBox(
+                    width: 250,
+                    child: TextField(
+                      controller: cityTextController,
+                      decoration: InputDecoration(
+                        labelText: AppLocalizations.of(context)!.city.toString(),
+                        labelStyle: TextStyle(
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Theme.of(context).colorScheme.secondary),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
