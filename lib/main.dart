@@ -45,6 +45,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  bool isEnglish = true;
   final cityTextController = TextEditingController();
   final dataService = DataService();
   WeatherResponse? _response;
@@ -73,6 +74,8 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ),
       ),
+
+
       body: Stack(
         children: [
           // Language Buttons
@@ -81,19 +84,19 @@ class _MyHomePageState extends State<MyHomePage> {
             child: FloatingActionButton(
               backgroundColor: Colors.blueAccent,
               foregroundColor: Colors.white,
-              child: const Text("EN"),
-              onPressed: () => Provider.of<LocaleProvider>(context, listen: false)
-                  .setLocale(AllLocales.all[0]),
-            ),
-          ),
-          Align(
-            alignment: const Alignment(0.9, 0.9),
-            child: FloatingActionButton(
-              backgroundColor: Colors.blueAccent,
-              foregroundColor: Colors.white,
-              child: const Text("RU"),
-              onPressed: () => Provider.of<LocaleProvider>(context, listen: false)
-                  .setLocale(AllLocales.all[1]),
+              onPressed: () {
+                // Toggle between EN and RU
+                setState(() {
+                  isEnglish = !isEnglish;
+                });
+
+                // Set the new locale based on the boolean value
+                Locale newLocale = isEnglish ? AllLocales.all[0] : AllLocales.all[1];
+                Provider.of<LocaleProvider>(context, listen: false).setLocale(newLocale);
+              },
+              child: Text(
+                isEnglish ? "EN" : "RU",
+              ),
             ),
           ),
 
