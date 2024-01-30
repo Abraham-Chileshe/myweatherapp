@@ -45,7 +45,8 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final cityTextController = TextEditingController();
-  final dataService = DataService();
+  final dataService = DataService(apiKey: '5c48dee52002a621e87a74b0c4dfb2c8', defaultLanguage: "ru");
+
 
   @override
   Widget build(BuildContext context) {
@@ -117,7 +118,7 @@ class _MyHomePageState extends State<MyHomePage> {
               children: [
                 // Use FutureBuilder for handling the asynchronous API call
                 FutureBuilder<WeatherResponse>(
-                  future: dataService.getWeather(cityTextController.text, context),
+                  future: dataService.getWeather(cityTextController.text),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return CircularProgressIndicator(); // Show loading indicator while waiting
