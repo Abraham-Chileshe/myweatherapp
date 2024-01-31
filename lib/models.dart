@@ -2,7 +2,7 @@ class WeatherInfo {
   final String description;
   final String icon;
 
-  WeatherInfo({required this.description, required this.icon});
+  const WeatherInfo({required this.description, required this.icon});
 
   factory WeatherInfo.fromJson(Map<String, dynamic> json) {
     final description = json['description'];
@@ -14,7 +14,7 @@ class WeatherInfo {
 class TemperatureInfo {
   final double temperature;
 
-  TemperatureInfo({required this.temperature});
+  const TemperatureInfo({required this.temperature});
 
   factory TemperatureInfo.fromJson(Map<String, dynamic> json) {
     final temperature = json['temp'];
@@ -31,7 +31,7 @@ class WeatherResponse {
     return 'https://openweathermap.org/img/wn/${weatherInfo.icon}@2x.png';
   }
 
-  WeatherResponse({required this.cityName, required this.tempInfo, required this.weatherInfo});
+  const WeatherResponse({required this.cityName, required this.tempInfo, required this.weatherInfo});
 
   factory WeatherResponse.fromJson(Map<String, dynamic> json) {
     final cityName = json['name'];
